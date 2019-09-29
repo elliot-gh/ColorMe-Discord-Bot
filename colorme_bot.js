@@ -39,7 +39,7 @@ module.exports = function(discordClient) {
             console.error(`Error while finding role. Reason is: ${err}`);
             return null;
         }
-    }
+    };
 
     // return true if success, false if not
     // const deleteRole = async function(colorStr, guild) {
@@ -137,10 +137,24 @@ module.exports = function(discordClient) {
         await clearOldRole(member);
         let newRole = await createRole(colorStr, guild);
         if (newRole === null) {
+            sendErrMsg(channel);
             return;
         }
 
-        await setRole(newRole, guild, member);
+        let setSuccess = await setRole(newRole, guild, member);
+        if (!setSuccess) {
+            sendErrMsg(channel);
+        }
+    };
+
+    const sendErrMsg = function(channel) {
+        channel.send('', {
+            'embed': {
+                'title': 'Error',
+                'description': MSG_ROLE_ERR,
+                'color': 0xFF0000
+            }
+        });
     };
 
     discordClient.on('message', async (msg) => {
