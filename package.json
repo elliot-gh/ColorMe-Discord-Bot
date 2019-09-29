@@ -1,0 +1,23 @@
+{
+  "name": "colorme-discord-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WhipeeDip/ColorMe-Discord-Bot.git"
+  },
+  "author": "Elliot Yoon",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/WhipeeDip/ColorMe-Discord-Bot/issues"
+  },
+  "homepage": "https://github.com/WhipeeDip/ColorMe-Discord-Bot#readme",
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "dotenv": "^8.1.0"
+  }
+}
