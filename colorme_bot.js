@@ -130,31 +130,41 @@ module.exports = function(discordClient) {
         let valid = validateColorStr(colorStr);
         if (!valid) {
             console.error(MSG_INVALID_FORMAT);
-            channel.send(MSG_INVALID_FORMAT);
+            sendErrMsg(channel, MSG_INVALID_FORMAT);
             return;
         }
 
         await clearOldRole(member);
         let newRole = await createRole(colorStr, guild);
         if (newRole === null) {
-            sendErrMsg(channel);
+            sendErrMsg(channel, undefined);
             return;
         }
 
         let setSuccess = await setRole(newRole, guild, member);
         if (!setSuccess) {
-            sendErrMsg(channel);
+            sendErrMsg(channel, undefined);
         }
     };
 
-    const sendErrMsg = function(channel) {
-        channel.send('', {
-            'embed': {
-                'title': 'Error',
-                'description': MSG_ROLE_ERR,
-                'color': 0xFF0000
-            }
-        });
+    const sendErrMsg = function(channel, error) {
+        if (error !== undefined) {
+            channel.send('', {
+                'embed': {
+                    'title': 'Error',
+                    'description': error,
+                    'color': 0xFF0000
+                }
+            });
+        } else {
+            channel.send('', {
+                'embed': {
+                    'title': 'Error',
+                    'description': MSG_ROLE_ERR,
+                    'color': 0xFF0000
+                }
+            });
+        }
     };
 
     discordClient.on('message', async (msg) => {
