@@ -190,7 +190,16 @@ module.exports = function(discordClient) {
         let setSuccess = await setRole(newRole, guild, member);
         if (!setSuccess) {
             sendErrMsg(channel, undefined);
+            return;
         }
+
+        channel.send('', {
+            'embed': {
+                'title': 'Success',
+                'description': `Set ${member}'s color to ${colorStr}`,
+                'color': parseInt(colorStr.substring(1), 16)
+            }
+        });
     };
 
     const sendErrMsg = function(channel, error) {
