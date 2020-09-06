@@ -6,7 +6,7 @@ Optionally validates contrast against dark, light, or both themes to prevent har
 
 ## Instructions
 
-1. Setup .env or environmental variables by looking at .env
+1. Rename `example.env` to `.env` or setup environmental variables and set according to comments
 2. `npm install`
 3. `npm start`
 
