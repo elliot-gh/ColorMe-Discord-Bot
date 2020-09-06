@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,7 +18,7 @@
   },
   "homepage": "https://github.com/WhipeeDip/ColorMe-Discord-Bot#readme",
   "dependencies": {
-    "discord.js": "^11.5.1",
-    "dotenv": "^8.1.0"
+    "discord.js": "^12.3.1",
+    "dotenv": "^8.2.0"
   }
 }

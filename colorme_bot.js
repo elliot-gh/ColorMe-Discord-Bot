@@ -79,8 +79,7 @@ module.exports = function(discordClient) {
         let roleName = COLORME_PREFIX + colorStr;
 
         try {
-            let roles = guild.roles;
-            let role = roles.find(val => val.name === roleName);
+            let role = guild.roles.cache.find(val => val.name === roleName);
             if (role == null) {
                 return null;
             }
@@ -104,15 +103,17 @@ module.exports = function(discordClient) {
             }
 
             let newRoleData = {
-                'name': roleName,
-                'color': colorStr,
-                'hoist': false,
-                'position': Number.MAX_SAFE_INTEGER,
-                'permissions': 0,
-                'mentionable': false
+                data: {
+                    'name': roleName,
+                    'color': colorStr,
+                    'hoist': false,
+                    'position': Number.MAX_SAFE_INTEGER,
+                    'permissions': 0,
+                    'mentionable': false
+                }
             };
 
-            let newRole = await guild.createRole(newRoleData);
+            let newRole = await guild.roles.create(newRoleData);
             return newRole;
         } catch (err) {
             console.error(`Error while creating role. Reason is: ${err}`);
@@ -123,7 +124,7 @@ module.exports = function(discordClient) {
     // return true if success, false if not
     const setRole = async function(role, guild, member) {
         try {
-            await member.addRole(role);
+            await member.roles.add(role);
             return true;
         } catch (err) {
             console.error(`Error while setting role. Reason is: ${err}`);
@@ -132,21 +133,20 @@ module.exports = function(discordClient) {
     };
 
     // checks for an existing role for the member, and deletes it if they were the only one
-    // returns true if an old role was deleted
+    // returns true if an error did NOT occur, false if there was en error
     const clearOldRole = async function(member) {
         try {
-            let roles = member.roles;
-            let role = roles.find((val) => {
+            let role = member.roles.cache.find((val) => {
                 return val.name.startsWith(COLORME_PREFIX);
             });
 
             if (role == null) {
-                return false;
+                return true;
             }
 
-            await member.removeRole(role);
+            await member.roles.remove(role);
             if (role.members.size !== 0) {
-                return false;
+                return true;
             }
 
             await role.delete();
@@ -180,7 +180,12 @@ module.exports = function(discordClient) {
             }
         }
 
-        await clearOldRole(member);
+        let clearSuccess = await clearOldRole(member);
+        if (!clearSuccess) {
+            sendErrMsg(channel, undefined);
+            return;
+        }
+
         let newRole = await createRole(colorStr, guild);
         if (newRole === null) {
             sendErrMsg(channel, undefined);
@@ -234,6 +239,7 @@ module.exports = function(discordClient) {
         }
 
         if (msgContent.startsWith(CMD_COLORME)) {
+            console.log(`Got message:\n\t${msgContent}`);
             handleColorMe(msgContent, guild, channel, member);
         }
     });
