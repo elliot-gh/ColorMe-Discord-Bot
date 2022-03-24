@@ -198,36 +198,36 @@ module.exports = function(discordClient) {
             return;
         }
 
-        channel.send('', {
-            'embed': {
+        channel.send({
+            embeds: [{
                 'title': 'Success',
                 'description': `Set ${member}'s color to ${colorStr}`,
                 'color': parseInt(colorStr.substring(1), 16)
-            }
+            }]
         });
     };
 
     const sendErrMsg = function(channel, error) {
         if (error !== undefined) {
-            channel.send('', {
-                'embed': {
+            channel.send({
+                embeds: [{
                     'title': 'Error',
                     'description': error,
                     'color': 0xFF0000
-                }
+                }]
             });
         } else {
-            channel.send('', {
-                'embed': {
+            channel.send({
+                embeds: [{
                     'title': 'Error',
                     'description': MSG_ROLE_ERR,
                     'color': 0xFF0000
-                }
+                }]
             });
         }
     };
 
-    discordClient.on('message', async (msg) => {
+    discordClient.on('messageCreate', async (msg) => {
         let msgContent = msg.content;
         let channel = msg.channel;
         let member = msg.member;
