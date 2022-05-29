@@ -1,6 +1,6 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CommandInteraction, CreateRoleOptions, Guild, GuildMember, HexColorString, Intents, Interaction, MessageEmbedOptions, Role, TextChannel } from "discord.js";
+import { CommandInteraction, CreateRoleOptions, Guild, GuildMember, HexColorString, Intents, MessageEmbedOptions, Role } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { BotInterface } from "../../BotInterface";
 import { readYamlConfig } from "../../ConfigUtils";
@@ -24,10 +24,10 @@ export class ColorMeBot implements BotInterface {
     private static readonly SUBCMD_SET_OPT_COLOR = "color";
     private static readonly SUBCMD_CLEAR = "clear";
 
-    private static readonly DARK_CHAT = '36393F'; // dark theme chat background
-    private static readonly DARK_MEM_LIST = '2F3136'; // dark theme member list background
-    private static readonly LIGHT_CHAT = 'FFFFFF'; // light theme chat background
-    private static readonly LIGHT_MEM_LIST = 'F2F3F5'; // light theme member list background
+    private static readonly DARK_CHAT = "36393F"; // dark theme chat background
+    private static readonly DARK_MEM_LIST = "2F3136"; // dark theme member list background
+    private static readonly LIGHT_CHAT = "FFFFFF"; // light theme chat background
+    private static readonly LIGHT_MEM_LIST = "F2F3F5"; // light theme member list background
 
     intents: number[];
     slashCommands: [SlashCommandBuilder];
@@ -63,10 +63,10 @@ export class ColorMeBot implements BotInterface {
         try {
             switch(interaction.options.getSubcommand()) {
                 case ColorMeBot.SUBCMD_SET:
-                    this.handleSet(interaction);
+                    await this.handleSet(interaction);
                     break;
                 case ColorMeBot.SUBCMD_CLEAR:
-                    this.handleClear(interaction);
+                    await this.handleClear(interaction);
                     break;
             }
         } catch (error) {
@@ -96,12 +96,12 @@ export class ColorMeBot implements BotInterface {
             console.log(`[ColorMe] Got set with color string ${colorStr} from member ${member}`);
             const valid = validateHexColorString(colorStr);
             if (!valid) {
-                this.sendErrorMessage(interaction, "Invalid color string. Must be a hex string exactly of format `#RRGGBB`.");
+                await this.sendErrorMessage(interaction, "Invalid color string. Must be a hex string exactly of format `#RRGGBB`.");
                 return;
             }
 
             if (this.config.contrastCheck) {
-                let bad = this.checkContrastHandler(colorStr);
+                const bad = this.checkContrastHandler(colorStr);
                 if (bad.length > 0) {
                     let errContrast = `${colorStr} failed contrast checks for this server's minimum, ${this.config.contrastMin}:\n\n`;
                     bad.forEach((badReason) => {
@@ -109,38 +109,38 @@ export class ColorMeBot implements BotInterface {
                     });
 
                     console.log(`[ColorMe] Color string ${colorStr} from member ${member} failed contrast check: ${errContrast}`);
-                    this.sendErrorMessage(interaction, errContrast);
+                    await this.sendErrorMessage(interaction, errContrast);
                     return;
                 }
             }
 
             const clearSuccess = await this.clearRoles(member);
             if (!clearSuccess) {
-                this.sendErrorMessage(interaction);
+                await this.sendErrorMessage(interaction);
                 return;
             }
 
             const newRole = await this.createRole(colorStr as HexColorString, interaction.guild!);
             if (newRole === null) {
-                this.sendErrorMessage(interaction);
+                await this.sendErrorMessage(interaction);
                 return;
             }
 
             const setSuccess = await this.setRole(newRole, member);
             if (!setSuccess) {
-                this.sendErrorMessage(interaction);
+                await this.sendErrorMessage(interaction);
                 return;
             }
 
             await interaction.reply({
                 embeds: [{
-                    'title': 'Success',
-                    'description': `Set ${member}'s color to ${colorStr}`,
-                    'color': parseInt(colorStr.substring(1), 16)
+                    "title": "Success",
+                    "description": `Set ${member}'s color to ${colorStr}`,
+                    "color": parseInt(colorStr.substring(1), 16)
                 } as MessageEmbedOptions]
             });
 
-            console.log(`[ColorMe] handleSet() success`);
+            console.log("[ColorMe] handleSet() success");
         } catch (error) {
             console.error(`[ColorMe] Error in handleSet(): ${error}`);
             await this.sendErrorMessage(interaction, error);
@@ -204,7 +204,7 @@ export class ColorMeBot implements BotInterface {
                 color: 0x00FF00
             } as MessageEmbedOptions] });
 
-            console.log(`[ColorMe] handleClear() success`);
+            console.log("[ColorMe] handleClear() success");
         } catch (error) {
             console.error(`[ColorMe] Error in handleClear(): ${error}`);
             await this.sendErrorMessage(interaction, error);
