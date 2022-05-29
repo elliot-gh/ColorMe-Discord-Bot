@@ -1,6 +1,6 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CommandInteraction, CreateRoleOptions, Guild, GuildMember, HexColorString, Intents, MessageEmbedOptions, Role } from "discord.js";
+import { CommandInteraction, CreateRoleOptions, Guild, GuildMember, HexColorString, Intents, MessageEmbed, Role } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { BotInterface } from "../../BotInterface";
 import { readYamlConfig } from "../../ConfigUtils";
@@ -132,13 +132,12 @@ export class ColorMeBot implements BotInterface {
                 return;
             }
 
-            await interaction.reply({
-                embeds: [{
-                    "title": "Success",
-                    "description": `Set ${member}'s color to ${colorStr}`,
-                    "color": parseInt(colorStr.substring(1), 16)
-                } as MessageEmbedOptions]
-            });
+            await interaction.reply({ embeds: [
+                new MessageEmbed()
+                    .setTitle("Success")
+                    .setDescription(`Set ${member}'s color to ${colorStr}`)
+                    .setColor(parseInt(colorStr.substring(1), 16))
+            ]});
 
             console.log("[ColorMe] handleSet() success");
         } catch (error) {
@@ -198,11 +197,12 @@ export class ColorMeBot implements BotInterface {
                 return;
             }
 
-            await interaction.reply({ embeds: [{
-                title: "Success",
-                description: `Cleared all ${this.config.prefix} roles for ${member}`,
-                color: 0x00FF00
-            } as MessageEmbedOptions] });
+            await interaction.reply({ embeds: [
+                new MessageEmbed()
+                    .setTitle("Success")
+                    .setDescription(`Cleared all ${this.config.prefix} roles for ${member}`)
+                    .setColor(0x00FF00)
+            ]});
 
             console.log("[ColorMe] handleClear() success");
         } catch (error) {
@@ -313,13 +313,12 @@ export class ColorMeBot implements BotInterface {
             description = error;
         }
 
-        const embed: MessageEmbedOptions = {
-            title: "Error",
-            description: description,
-            color: 0xFF0000
-        };
-
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [
+            new MessageEmbed()
+                .setTitle("Error")
+                .setDescription(description)
+                .setColor(0xFF0000)
+        ]});
     }
 }
 
