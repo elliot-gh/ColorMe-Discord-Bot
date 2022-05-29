@@ -6,9 +6,9 @@ Optionally validates contrast against dark, light, or both themes to prevent har
 
 ## Instructions
 
-1. Rename `example.env` to `.env` or setup environmental variables and set according to comments
-2. `npm install`
-3. `npm start`
+1. Please look at [Discord-Bot-Parent](https://github.com/elliot-gh/Discord-Bot-Parent) to setup the main parent project
+2. Copy `config.example.yaml` as `config.yaml`.
+3. Run parent
 
 ## License
 

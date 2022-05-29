@@ -1,25 +1,19 @@
-# Simply enter the value indicated after the equals sign.
-# Comments, starting with the pound sign (#), are ignored.
-# --------------------
-
-# Your Discord bot token.
-# See here: https://discordapp.com/developers/applications/me
-DISCORD_TOKEN=
+# Copy this file as "config.yaml", and fill in the values as appropriate.
+# ------------------------------------------------------------------------------
 
 # The prefix used for role names.
 # WARNING: Changing this after using the bot is not something that is currently handled (won't delete/rename old roles).
-COLORME_PREFIX=ColorMe_
+prefix: ColorMe_
 
-# Enable contrast check.
-# true for on, false for off. Case sensitive! Default is true.
-CONTRAST_CHECK=true
+# Whether to enable contrast checking against Discord's background colors.
+contrastCheck: true
 
-# Which theme to check contrast against.
-# Allowed values are "dark", "light", or "both" (no quotes).
-CONTRAST_THEME=dark
+# Which theme to check contrast against
+# Allowed values are "dark", "light", or "both" (be warned "both" might result in a very limited set of colors)
+contrastTheme: dark
 
 # See https://www.w3.org/TR/WCAG/#contrast-minimum for recommended contrast ratios (W3C recommends at least 4.5).
 # This is something that will depend on the members of your server and potentially their display hardware.
 # My server is fine with somewhere around 2.45.
 # WARNING: Changing this after using the bot is not something that is currently handled (won't delete old roles).
-CONTRAST_MIN=2.45
+contrastMin: 2.45

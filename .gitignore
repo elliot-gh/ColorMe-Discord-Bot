@@ -60,5 +60,9 @@ typings/
 # next.js build output
 .next
 
-# my stuff
-.env
+# config
+config.yaml
+
+# yarn
+.yarn
+.pnp.*
