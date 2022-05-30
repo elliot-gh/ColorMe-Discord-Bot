@@ -7,7 +7,7 @@ Optionally validates contrast against dark, light, or both themes to prevent har
 ## Instructions
 
 1. Please look at [Discord-Bot-Parent](https://github.com/elliot-gh/Discord-Bot-Parent) to setup the main parent project
-2. Copy `config.example.yaml` as `config.yaml`.
+2. Copy `config.example.yaml` as `config.yaml` and edit as appropriate.
 3. Run parent
 
 ## License
