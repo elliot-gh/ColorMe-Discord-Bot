@@ -31,25 +31,26 @@ export class ColorMeBot implements BotInterface {
 
     intents: number[];
     slashCommands: [SlashCommandBuilder];
-    slashColorMe: SlashCommandBuilder;
-    config!: ColorMeConfig;
+    private slashColorMe: SlashCommandBuilder;
+    private config!: ColorMeConfig;
 
     constructor() {
-        this.intents = [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES];
+        this.intents = [Intents.FLAGS.GUILDS];
         this.slashColorMe = new SlashCommandBuilder()
             .setName("colorme")
             .setDescription("Sets or removes your name's color.")
-            .addSubcommand((subcommand) =>
+            .addSubcommand(subcommand =>
                 subcommand
                     .setName(ColorMeBot.SUBCMD_SET)
                     .setDescription("Sets your color.")
-                    .addStringOption((option) =>
-                        option.setName(ColorMeBot.SUBCMD_SET_OPT_COLOR)
+                    .addStringOption(option =>
+                        option
+                            .setName(ColorMeBot.SUBCMD_SET_OPT_COLOR)
                             .setDescription("Your desired color, in the format #RRGGBB.")
                             .setRequired(true)
                     )
             )
-            .addSubcommand((subcommand) =>
+            .addSubcommand(subcommand =>
                 subcommand
                     .setName(ColorMeBot.SUBCMD_CLEAR)
                     .setDescription("Clears your color.")
@@ -76,16 +77,14 @@ export class ColorMeBot implements BotInterface {
 
     async init(): Promise<string | null> {
         const configPath = join(dirname(fileURLToPath(import.meta.url)), "config.yaml");
-        let config: ColorMeConfig;
         try {
-            config = await readYamlConfig<ColorMeConfig>(configPath);
+            this.config = await readYamlConfig<ColorMeConfig>(configPath);
         } catch (error) {
             const errMsg = `[ColorMeBot] Unable to read config: ${error}`;
             console.error(errMsg);
             return errMsg;
         }
 
-        this.config = config;
         return null;
     }
 
