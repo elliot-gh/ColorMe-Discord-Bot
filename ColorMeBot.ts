@@ -1,14 +1,15 @@
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { CommandInteraction, CreateRoleOptions, Guild, GuildMember, HexColorString, Intents, MessageEmbed, Role } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { ChatInputCommandInteraction, CommandInteraction, CreateRoleOptions, EmbedBuilder, GatewayIntentBits, Guild, GuildMember, GuildMemberManager, HexColorString, Role, SlashCommandBuilder } from "discord.js";
 import { BotInterface } from "../../BotInterface";
 import { readYamlConfig } from "../../ConfigUtils";
 import { contrastRatio, validateHexColorString } from "./utils/colorUtils";
 
+// eslint-disable-next-line no-unused-vars
 enum DiscordThemes {
+    // eslint-disable-next-line no-unused-vars
     Dark = "dark",
+    // eslint-disable-next-line no-unused-vars
     Light = "light",
+    // eslint-disable-next-line no-unused-vars
     Both = "both"
 }
 
@@ -29,13 +30,13 @@ export class ColorMeBot implements BotInterface {
     private static readonly LIGHT_CHAT = "FFFFFF"; // light theme chat background
     private static readonly LIGHT_MEM_LIST = "F2F3F5"; // light theme member list background
 
-    intents: number[];
-    slashCommands: [SlashCommandBuilder];
+    intents: GatewayIntentBits[];
+    commands: [SlashCommandBuilder];
     private slashColorMe: SlashCommandBuilder;
     private config!: ColorMeConfig;
 
     constructor() {
-        this.intents = [Intents.FLAGS.GUILDS];
+        this.intents = [GatewayIntentBits.Guilds];
         this.slashColorMe = new SlashCommandBuilder()
             .setName("colorme")
             .setDescription("Sets or removes your name's color.")
@@ -55,11 +56,14 @@ export class ColorMeBot implements BotInterface {
                     .setName(ColorMeBot.SUBCMD_CLEAR)
                     .setDescription("Clears your color.")
             ) as SlashCommandBuilder;
-        this.slashCommands = [this.slashColorMe];
-        // this.config = null;
+        this.commands = [this.slashColorMe];
     }
 
-    async processSlashCommand(interaction: CommandInteraction): Promise<void> {
+    async processCommand(interaction: CommandInteraction): Promise<void> {
+        if (!interaction.isChatInputCommand()) {
+            return;
+        }
+
         console.log(`[ColorMeBot]: got interaction: ${interaction}`);
         try {
             switch(interaction.options.getSubcommand()) {
@@ -76,9 +80,8 @@ export class ColorMeBot implements BotInterface {
     }
 
     async init(): Promise<string | null> {
-        const configPath = join(dirname(fileURLToPath(import.meta.url)), "config.yaml");
         try {
-            this.config = await readYamlConfig<ColorMeConfig>(configPath);
+            this.config = await readYamlConfig<ColorMeConfig>(import.meta, "config.yaml");
         } catch (error) {
             const errMsg = `[ColorMeBot] Unable to read config: ${error}`;
             console.error(errMsg);
@@ -88,7 +91,7 @@ export class ColorMeBot implements BotInterface {
         return null;
     }
 
-    async handleSet(interaction: CommandInteraction): Promise<void> {
+    async handleSet(interaction: ChatInputCommandInteraction): Promise<void> {
         try {
             const member = interaction.member as GuildMember;
             const colorStr = interaction.options.getString(ColorMeBot.SUBCMD_SET_OPT_COLOR, true);
@@ -113,7 +116,7 @@ export class ColorMeBot implements BotInterface {
                 }
             }
 
-            const clearSuccess = await this.clearRoles(member);
+            const clearSuccess = await this.clearRoles(member, interaction.guild!.members);
             if (!clearSuccess) {
                 await this.sendErrorMessage(interaction);
                 return;
@@ -125,14 +128,14 @@ export class ColorMeBot implements BotInterface {
                 return;
             }
 
-            const setSuccess = await this.setRole(newRole, member);
+            const setSuccess = await this.setRole(newRole, member.id, interaction.guild!.members);
             if (!setSuccess) {
                 await this.sendErrorMessage(interaction);
                 return;
             }
 
             await interaction.reply({ embeds: [
-                new MessageEmbed()
+                new EmbedBuilder()
                     .setTitle("Success")
                     .setDescription(`Set ${member}'s color to ${colorStr}`)
                     .setColor(parseInt(colorStr.substring(1), 16))
@@ -186,18 +189,18 @@ export class ColorMeBot implements BotInterface {
         return bad;
     }
 
-    async handleClear(interaction: CommandInteraction): Promise<void> {
+    async handleClear(interaction: ChatInputCommandInteraction): Promise<void> {
         try {
             const member = interaction.member as GuildMember;
             console.log(`[ColorMe] Got clear subcommand from member ${member}`);
-            const result = await this.clearRoles(member);
+            const result = await this.clearRoles(member, interaction.guild!.members);
             if (!result) {
                 await this.sendErrorMessage(interaction);
                 return;
             }
 
             await interaction.reply({ embeds: [
-                new MessageEmbed()
+                new EmbedBuilder()
                     .setTitle("Success")
                     .setDescription(`Cleared all ${this.config.prefix} roles for ${member}`)
                     .setColor(0x00FF00)
@@ -265,9 +268,12 @@ export class ColorMeBot implements BotInterface {
         }
     }
 
-    async setRole(role: Role, member: GuildMember): Promise<boolean> {
+    async setRole(role: Role, memberId: string, manager: GuildMemberManager): Promise<boolean> {
         try {
-            await member.roles.add(role);
+            await manager.addRole({
+                user: memberId,
+                role: role
+            });
             return true;
         } catch (err) {
             console.error(`[ColorMe] Error while setting role: ${err}`);
@@ -280,19 +286,27 @@ export class ColorMeBot implements BotInterface {
      * @param member The member
      * @returns true if deletion was successful, false if failed.
      */
-    async clearRoles(member: GuildMember): Promise<boolean> {
+    async clearRoles(member: GuildMember, manager: GuildMemberManager): Promise<boolean> {
         try {
             const role = member.roles.cache.find((val) => val.name.startsWith(this.config.prefix));
             if (role === undefined) {
                 return true;
             }
 
-            await member.roles.remove(role);
-            if (role.members.size === 0) {
+            const roleId = role.id;
+            await manager.removeRole({
+                user: member.id,
+                role: roleId
+            });
+
+            const oldRole = await member.guild.roles.fetch(roleId);
+            if (oldRole !== null &&
+                (oldRole.members.size === 0
+                    || (oldRole.members.size === 1 && oldRole.members.has(member.id)))) {
                 await role.delete();
             }
 
-            return true && await this.clearRoles(member);
+            return true || await this.clearRoles(member, manager);
         } catch (err) {
             console.error(`[ColorMe] Error while clearing role: ${err}`);
             return false;
@@ -313,7 +327,7 @@ export class ColorMeBot implements BotInterface {
         }
 
         await interaction.reply({ embeds: [
-            new MessageEmbed()
+            new EmbedBuilder()
                 .setTitle("Error")
                 .setDescription(description)
                 .setColor(0xFF0000)
