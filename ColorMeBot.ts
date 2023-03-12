@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, CommandInteraction, CreateRoleOptions, EmbedBuilder, GatewayIntentBits, Guild, GuildMember, GuildMemberManager, HexColorString, Role, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, CommandInteraction, RoleCreateOptions, EmbedBuilder, GatewayIntentBits, Guild, GuildMember, GuildMemberManager, HexColorString, Role, SlashCommandBuilder } from "discord.js";
 import { BotInterface } from "../../BotInterface";
 import { readYamlConfig } from "../../utils/ConfigUtils";
 import { contrastRatio, validateHexColorString } from "./utils/colorUtils";
@@ -251,7 +251,7 @@ export class ColorMeBot implements BotInterface {
                 return existingRole;
             }
 
-            const newRoleData: CreateRoleOptions = {
+            const newRoleData: RoleCreateOptions = {
                 name: roleName,
                 color: colorStr,
                 hoist: false,
